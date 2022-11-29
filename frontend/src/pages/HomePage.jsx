@@ -23,12 +23,26 @@ const HomePage = () => {
         })
         .then(response => response.json())
         .then(data => {
-            data.status === 200 ? navigateTo(`/${e.target.name.value}/${'1'}`) : alert("This room is already exists")
+            data.status === 200 ? navigateTo(`/${e.target.name.value}/${'1'}`)  : alert("Error deleting user")
         })
     }
+
+    const deleteAccount = async (e) => {
+        e.preventDefault()
+        logoutUser()
+        await fetch(`http://localhost:8000/user/delete`, {
+            method: 'POST',
+            headers: {
+                "Authorization": `Bearer ${authTokens.access}`
+            },
+            body: JSON.stringify({'username': user.username, 'password': '1'})
+        })
+    }
+
     return (
         <div id='enterRoom'>
             <button id='logout' onClick={logoutUser}>Logout</button>
+            <button id='deleteAccount' onClick={deleteAccount}>Delete Account</button>
             <form onSubmit={enterRoom}>
                 <label htmlFor="room">Enter the room's name</label>
                 <input type="text" name="room" placeholder='Room name...' />

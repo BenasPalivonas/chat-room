@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import MyTokenObtainPairView, createRoom, room, createUser
+from .views import MyTokenObtainPairView, createRoom, room, createUser, deleteUser
 
 
 urlpatterns = [
@@ -14,4 +14,5 @@ urlpatterns = [
     path('room/', createRoom, name="createRoom"),
     path('room/<str:name>/<str:password>', room, name="room"),
     path('user/create', createUser, name="createUser"),
+    path('user/delete', deleteUser, name="deleteUser"),
 ]

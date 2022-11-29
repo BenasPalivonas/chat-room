@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 import json
 
 
-from .models import Chat, Room
+from .models import Chat, Room, User
 from .serializers import ChatSerializer
 
 # Create your views here.
@@ -89,3 +89,13 @@ def createUser(request):
         except:
             User.objects.create_user(username=username, password=password).save()
             return JsonResponse({"status": "200", "ok": True})
+
+@api_view(['POST'])
+def deleteUser(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        print(data)
+        username = data['username']
+        user = User.objects.get(username=username,)
+        print(user)
+        user.delete()
