@@ -23,7 +23,7 @@ const HomePage = () => {
         })
         .then(response => response.json())
         .then(data => {
-            data.status === 200 ? navigateTo(`/${e.target.name.value}/${'1'}`)  : alert("Error deleting user")
+            data.status === 200 ? navigateTo(`/${e.target.name.value}/${'1'}`)  : alert("Error Creating room")
         })
     }
 
