@@ -1,101 +1,125 @@
-import { createContext, useState, useEffect } from 'react'
+import {createContext, useEffect, useState} from 'react'
 import jwt_decode from "jwt-decode";
-import { useNavigate } from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
+import {isValidForm} from "../utils/validationUtils.js";
 
-const AuthContext = createContext()
+const AuthContext = createContext(undefined)
 
 export default AuthContext;
 
 
 export const AuthProvider = ({children}) => {
-    let [authTokens, setAuthTokens] = useState(()=> localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null)
-    let [user, setUser] = useState(()=> localStorage.getItem('authTokens') ? jwt_decode(localStorage.getItem('authTokens')) : null)
-    let [loading, setLoading] = useState(true)
+    const [authTokens, setAuthTokens] = useState(() => localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null)
+    const [user, setUser] = useState(() => localStorage.getItem('authTokens') ? jwt_decode(localStorage.getItem('authTokens')) : null)
+    const [loading, setLoading] = useState(true)
 
     const navigateTo = useNavigate()
 
-    let loginUser = async (e) => {
-        e.preventDefault()
-        let response = await fetch('http://127.0.0.1:8000/api/token/', {
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
+    const loginRequest = async (username, password) =>
+        await fetch('http://127.0.0.1:8000/api/token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             },
-            body:JSON.stringify({'username':e.target.username.value, 'password':e.target.password.value})
+            body: JSON.stringify({username, password})
         })
-        let data = await response.json()
 
-        if(response.status === 200){
-            setAuthTokens(data)
-            setUser(jwt_decode(data.access))
-            localStorage.setItem('authTokens', JSON.stringify(data))
-            navigateTo('/')
-        }else{
-            console.log(response)
-            alert('Something went wrong!')
-        }
+    const loginUser = async (e) => {
+        e.preventDefault()
+        loginRequest(e.target.username.value, e.target.password.value)
+            .then(async (response) => {
+                const data = await response.json()
+                setAuthTokens(data)
+                setUser(jwt_decode(data.access))
+                localStorage.setItem('authTokens', JSON.stringify(data))
+                navigateTo('/')
+            })
+            .catch(() => alert('Something went wrong!'))
+    }
+
+    const registrationRequest = async (username, password) =>
+        await fetch('http://localhost:8000/user/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username, password})
+        })
+
+    const registerUser = async (e) => {
+        e.preventDefault()
+        const username = e.target.username.value
+        const password = e.target.password.value
+
+        if (!isValidForm(username, password))
+            return;
+
+        registrationRequest(username, password)
+            .then(data => {
+                if (data.ok)
+                    loginUser(e)
+                else
+                    alert("This Name Already Exists")
+            })
+            .catch(err => console.log(err))
     }
 
 
-    let logoutUser = () => {
+    const logoutUser = () => {
         setAuthTokens(null)
         setUser(null)
         localStorage.removeItem('authTokens')
     }
 
-
-    let updateToken = async () => {
-
-        let response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
+    const updateTokenRequest = async () =>
+        await fetch('http://127.0.0.1:8000/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({'refresh':authTokens?.refresh})
+            body: JSON.stringify({'refresh': authTokens?.refresh})
         })
 
-        let data = await response.json()
-        
-        if (response.status === 200){
-            setAuthTokens(data)
-            setUser(jwt_decode(data.access))
-            localStorage.setItem('authTokens', JSON.stringify(data))
-        }else{
-            logoutUser()
-        }
 
-        if(loading){
+    const updateToken = async () => {
+        updateTokenRequest
+            .then(async (response) => {
+                const data = await response.json()
+                setAuthTokens(data)
+                setUser(jwt_decode(data.access))
+                localStorage.setItem('authTokens', JSON.stringify(data))
+            })
+            .catch(logoutUser)
+
+        if (loading)
             setLoading(false)
-        }
     }
 
-    let contextData = {
-        user:user,
-        authTokens:authTokens,
-        loginUser:loginUser,
-        logoutUser:logoutUser,
+    const contextData = {
+        user: user,
+        authTokens: authTokens,
+        loginUser: loginUser,
+        logoutUser: logoutUser,
+        registerUser: registerUser,
     }
 
 
-    useEffect(()=> {
-
-        if(loading){
+    useEffect(() => {
+        if (loading)
             updateToken()
-        }
 
-        let fourMinutes = 1000 * 60 * 4
+        const fourMinutes = 1000 * 60 * 4
 
-        let interval =  setInterval(()=> {
-            if(authTokens){
+        const interval = setInterval(() => {
+            if (authTokens)
                 updateToken()
-            }
         }, fourMinutes)
-        return ()=> clearInterval(interval)
+        return () => clearInterval(interval)
 
     }, [authTokens, loading])
 
     return(
-        <AuthContext.Provider value={contextData} >
+        <AuthContext.Provider value={contextData}>
             {loading ? null : children}
         </AuthContext.Provider>
     )
