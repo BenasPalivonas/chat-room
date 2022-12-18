@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import React, {useContext, useEffect, useState} from 'react'
+import {Link, useNavigate, useParams} from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 
 import Back from '../assets/back.svg'
@@ -7,26 +7,31 @@ import '../styles/Chat.scss'
 import axios from 'axios'
 
 const Chat = () => {
-    const { user, authTokens } = useContext(AuthContext)
-    const { name, password } = useParams()
+    const {user, authTokens} = useContext(AuthContext)
+    const {name, password} = useParams()
     const navigateTo = useNavigate()
     const [messages, setMessages] = useState([])
+
     useEffect(() => {
         const fetchData = async () => {
-        await fetch(`http://localhost:8000/room/${name}/${password}`, {
-            method: 'GET',
-            headers: {
-                "Authorization": `Bearer ${authTokens.access}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => setMessages(data))
-        .catch(err => navigateTo("/"))
+            await fetch(`http://localhost:8000/room/${name}/${password}`, {
+                method: 'GET',
+                headers: {
+                    "Authorization": `Bearer ${authTokens.access}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => setMessages(data))
+                .catch(() => {
+                    alert("Something went wrong!")
+                    navigateTo("/")
+                })
         }
         const timer = setInterval(() => {fetchData()}, 1000)
         fetchData()
         return () => clearInterval(timer)
     }, [])
+
     const Send = async (e) => {
         e.preventDefault()
         let data = new FormData()
@@ -44,6 +49,7 @@ const Chat = () => {
         let messagesContainer = document.getElementById("messagesContainer")
         messagesContainer.scrollTo(0, 0)
     }
+
     return (
         <>
             <nav>
@@ -55,8 +61,12 @@ const Chat = () => {
             <div className="messages">
                 <div className="message" id='messagesContainer'>
                     {messages && messages.map((message) => {
-                        return <div className={`${user.username == message.user ? 'owner' : 'another'}`} key={message.id}><h3>{message.user}</h3> <p>{message.message}</p>
-                            {message.image ? <img className='image' style={{'width': 'auto', 'height': "100px", "display": "block"}} src={`http://localhost:8000${message.image}`} loading="lazy" width={300} height={150} /> : ''}
+                        return <div className={`${user.username === message.user ? 'owner' : 'another'}`}
+                                    key={message.id}><h3>{message.user}</h3> <p>{message.message}</p>
+                            {message.image ?
+                                <img className='image' style={{'width': 'auto', 'height': "100px", "display": "block"}}
+                                     src={`http://localhost:8000${message.image}`} loading="lazy" width={300}
+                                     height={150} alt='image'/> : ''}
                         </div>
                     })}
                 </div>

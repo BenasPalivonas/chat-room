@@ -3,6 +3,7 @@ import AuthContext from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 import "../styles/LoginPage.scss"
+import {isValidForm} from "../utils/validationUtils.js";
 
 const RegisterPage = () => {
     const { loginUser } = useContext(AuthContext)
@@ -12,24 +13,9 @@ const RegisterPage = () => {
         const username = e.target.username.value;
         const password = e.target.password.value
 
-        if(!username || !password){
-            alert("Username and Password field are required!")
-            return;
-        }
+        if(!isValidForm(username, password)) return;
 
-        if(username.length < 6 || username.length > 16){
-            alert("Username should be between 6 and 16 characters long!")
-            return;
-        }
-
-        const regex = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})/;
-
-        if(!password.match(regex)){
-            alert("Password should be between 8 and 32 characters long, contain one uppercase, one lowercase letter, 1 number and 1 symbol!")
-            return;
-        }
-
-        const data = {'username':e.target.username.value, 'password':e.target.password.value}
+        const data = {'username':username, 'password':password}
         await fetch('http://localhost:8000/user/create', {
             method: 'POST',
             headers: {

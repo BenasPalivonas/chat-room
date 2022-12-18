@@ -1,11 +1,12 @@
 import React, {useContext} from 'react'
-import { Link } from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 
 import "../styles/LoginPage.scss"
 
 const LoginPage = () => {
     let {loginUser} = useContext(AuthContext)
+
     return (
         <div id='login'>
             <Link id="register" to='/register'>Register</Link>
