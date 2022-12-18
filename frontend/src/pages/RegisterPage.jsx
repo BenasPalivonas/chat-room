@@ -1,46 +1,19 @@
-import React, { useContext } from 'react';
+import React, {useContext} from 'react';
 import AuthContext from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 
 import "../styles/LoginPage.scss"
-import {isValidForm} from "../utils/validationUtils.js";
 
 const RegisterPage = () => {
-    const { loginUser } = useContext(AuthContext)
-
-    const Submit = async (e) => {
-        e.preventDefault()
-        const username = e.target.username.value;
-        const password = e.target.password.value
-
-        if(!isValidForm(username, password)) return;
-
-        const data = {'username':username, 'password':password}
-        await fetch('http://localhost:8000/user/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.ok){
-                loginUser(e)
-            }else{
-                alert("This Name Already Exists")
-            }
-        })
-        .catch(err => console.log(err))
-    }
+    const {registerUser} = useContext(AuthContext)
 
     return (
         <div id='login'>
             <Link id="register" to='/login'>Login</Link>
-            <form onSubmit={Submit}>
+            <form onSubmit={registerUser}>
                 <h2>Register</h2>
-                <input type="text" name='username' placeholder='Enter Username' />
-                <input type="password" name="password" placeholder='Enter Password' />
+                <input type="text" name='username' placeholder='Enter Username'/>
+                <input type="password" name="password" placeholder='Enter Password'/>
                 <button type="submit">Register</button>
             </form>
         </div>

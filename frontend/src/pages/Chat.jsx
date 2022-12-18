@@ -27,12 +27,12 @@ const Chat = () => {
                     navigateTo("/")
                 })
         }
-        const timer = setInterval(() => {fetchData()}, 1000)
+        const timer = setInterval(fetchData, 1000)
         fetchData()
         return () => clearInterval(timer)
     }, [])
 
-    const Send = async (e) => {
+    const sendMessage = async (e) => {
         e.preventDefault()
         let data = new FormData()
         data.append("message", e.target.message.value)
@@ -71,10 +71,10 @@ const Chat = () => {
                     })}
                 </div>
             </div>
-            <form className='send' onSubmit={Send}>
-                <input type="text" name="message" />
-                <input type="file" name="image" />
-                <input type="submit" value="Send" />
+            <form className='send' onSubmit={sendMessage}>
+                <input type="text" name="message"/>
+                <input type="file" name="image"/>
+                <input type="submit" value="Send"/>
             </form>
         </>
     )
