@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_http_methods
 
 import json
 
@@ -28,18 +29,20 @@ class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 @api_view(['POST'])
+@require_http_methods(["POST"])
 @permission_classes([IsAuthenticated])
-def createRoom(request):
+def create_room(request):
     if request.method == "POST":
         data = json.loads(request.body)
         try:
             Room.objects.get(name = data['name'], password = data['password'])
             return JsonResponse({"status": 404})
-        except:
+        except RuntimeError:
             Room.objects.create(name = data['name'], password = data['password'])
             return JsonResponse({"status": 200})
 
 @api_view(['GET', 'POST', 'DELETE'])
+@require_http_methods(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 def room(request, name, password):
@@ -59,26 +62,22 @@ def room(request, name, password):
         user = request.user
         try:
             message = request.data.get('message')
-        except:
+        except RuntimeError:
             message = ""
         try:
             image = request.data.get('image')
             print(image)
             if image == "undefined":
                 image = None
-        except:
+        except RuntimeError:
             image = None
         chat = Chat.objects.create(user=user, room=room, message=message, image=image)
         chat.save()
-        # chat = ChatSerializer(data=request)
-        # chat.user = user
-        # chat.room = room
-        # if chat.is_valid():
-        #     chat.save()
         return JsonResponse({"status": "201"})
 
 @api_view(['POST'])
-def createUser(request):
+@require_http_methods(["POST"])
+def create_user(request):
     if request.method == "POST":
         data = json.loads(request.body)
         username = data['username']
@@ -86,12 +85,13 @@ def createUser(request):
         try:
             User.objects.get(username=username)
             return JsonResponse({"status": "405", "ok": False})
-        except:
+        except RuntimeError:
             User.objects.create_user(username=username, password=password).save()
             return JsonResponse({"status": "200", "ok": True})
 
 @api_view(['POST'])
-def deleteUser(request):
+@require_http_methods(["POST"])
+def delete_user(request):
     if request.method == "POST":
         data = json.loads(request.body)
         print(data)
