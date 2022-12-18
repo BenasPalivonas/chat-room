@@ -37,7 +37,7 @@ def create_room(request):
         try:
             Room.objects.get(name = data['name'], password = data['password'])
             return JsonResponse({"status": 404})
-        except RuntimeError:
+        except:
             Room.objects.create(name = data['name'], password = data['password'])
             return JsonResponse({"status": 200})
 
@@ -62,14 +62,14 @@ def room(request, name, password):
         user = request.user
         try:
             message = request.data.get('message')
-        except RuntimeError:
+        except:
             message = ""
         try:
             image = request.data.get('image')
             print(image)
             if image == "undefined":
                 image = None
-        except RuntimeError:
+        except:
             image = None
         chat = Chat.objects.create(user=user, room=room, message=message, image=image)
         chat.save()
@@ -85,7 +85,7 @@ def create_user(request):
         try:
             User.objects.get(username=username)
             return JsonResponse({"status": "405", "ok": False})
-        except RuntimeError:
+        except:
             User.objects.create_user(username=username, password=password).save()
             return JsonResponse({"status": "200", "ok": True})
 
