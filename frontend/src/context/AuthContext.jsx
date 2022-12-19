@@ -82,7 +82,7 @@ export const AuthProvider = ({children}) => {
 
 
     const updateToken = async () => {
-        updateTokenRequest
+        updateTokenRequest()
             .then(async (response) => {
                 const data = await response.json()
                 setAuthTokens(data)
