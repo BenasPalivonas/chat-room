@@ -5,14 +5,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import MyTokenObtainPairView, createRoom, room, createUser, deleteUser
+from .views import MyTokenObtainPairView, create_room, room, create_user, delete_user
 
 
 urlpatterns = [
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('room/', createRoom, name="createRoom"),
+    path('room/', create_room, name="createRoom"),
     path('room/<str:name>/<str:password>', room, name="room"),
-    path('user/create', createUser, name="createUser"),
-    path('user/delete', deleteUser, name="deleteUser"),
+    path('user/create', create_user, name="createUser"),
+    path('user/delete', delete_user, name="deleteUser"),
 ]
