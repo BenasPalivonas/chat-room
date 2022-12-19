@@ -94,8 +94,6 @@ def create_user(request):
 def delete_user(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        print(data)
         username = data['username']
         user = User.objects.get(username=username,)
-        print(user)
         user.delete()
