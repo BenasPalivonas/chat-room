@@ -12,7 +12,6 @@ import json
 from .models import Chat, Room, User
 from .serializers import ChatSerializer
 
-# Create your views here.
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -33,13 +32,8 @@ class MyTokenObtainPairView(TokenObtainPairView):
 @permission_classes([IsAuthenticated])
 def create_room(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        try:
-            Room.objects.get(name = data['name'], password = data['password'])
-            return JsonResponse({"status": 404})
-        except:
-            Room.objects.create(name = data['name'], password = data['password'])
-            return JsonResponse({"status": 200})
+        createRoom(request)
+
 
 @api_view(['GET', 'POST', 'DELETE'])
 @require_http_methods(['GET', 'POST', 'DELETE'])
@@ -47,39 +41,38 @@ def create_room(request):
 @parser_classes([MultiPartParser, FormParser])
 def room(request, name, password):
     if request.method == "GET":
-        room = Room.objects.get(name=name, password=password)
-        messages = reversed(room.room.all())
-        serializer = ChatSerializer(messages, many=True)
-        return Response(serializer.data)
+        getRoom(name,password)
 
     if request.method == "DELETE":
-        room = Room.objects.get(name=name, password=password)
-        room.delete()
+        deleteRoom(name,password)
 
     if request.method == "POST":
-        print(request.POST, request.data, sep="\n")
-        room = Room.objects.get(name=name, password=password)
-        user = request.user
-        try:
-            message = request.data.get('message')
-        except:
-            message = ""
-        try:
-            image = request.data.get('image')
-            print(image)
-            if image == "undefined":
-                image = None
-        except:
-            image = None
-        chat = Chat.objects.create(user=user, room=room, message=message, image=image)
-        chat.save()
-        return JsonResponse({"status": "201"})
+        postMessage(name,password,request)
+
 
 @api_view(['POST'])
 @require_http_methods(["POST"])
 def create_user(request):
     if request.method == "POST":
         data = json.loads(request.body)
+        createUser(data)
+
+
+@api_view(['POST'])
+@require_http_methods(["POST"])
+def delete_user(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        deleteUser(data)
+
+
+def deleteUser(data):
+        username = data['username']
+        user = User.objects.get(username=username,)
+        user.delete()
+
+
+def createUser(data):
         username = data['username']
         password = data['password']
         try:
@@ -89,11 +82,39 @@ def create_user(request):
             User.objects.create_user(username=username, password=password).save()
             return JsonResponse({"status": "200", "ok": True})
 
-@api_view(['POST'])
-@require_http_methods(["POST"])
-def delete_user(request):
-    if request.method == "POST":
+def getRoom(name,password):
+        room = Room.objects.get(name=name, password=password)
+        messages = reversed(room.room.all())
+        serializer = ChatSerializer(messages, many=True)
+        return Response(serializer.data)
+
+def deleteRoom(name,password):
+        room = Room.objects.get(name=name, password=password)
+        room.delete()
+
+def postMessage(name,password,request):
+        room = Room.objects.get(name=name, password=password)
+        user = request.user
+        try:
+            message = request.data.get('message')
+        except:
+            message = ""
+        try:
+            image = request.data.get('image')
+            if image == "undefined":
+                image = None
+        except:
+            image = None
+        chat = Chat.objects.create(user=user, room=room, message=message, image=image)
+        chat.save()
+        return JsonResponse({"status": "201"})
+
+def createRoom(request):
         data = json.loads(request.body)
-        username = data['username']
-        user = User.objects.get(username=username,)
-        user.delete()
+        try:
+            Room.objects.get(name = data['name'], password = data['password'])
+            return JsonResponse({"status": 404})
+        except:
+            Room.objects.create(name = data['name'], password = data['password'])
+            return JsonResponse({"status": 200})
+
