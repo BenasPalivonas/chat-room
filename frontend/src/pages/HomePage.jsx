@@ -1,29 +1,32 @@
-import React, {useState, useEffect, useContext} from 'react'
+import React, {useContext} from 'react'
 import AuthContext from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 
 import "../styles/HomePage.scss"
 
 const HomePage = () => {
-    const { user, authTokens } = useContext(AuthContext)
+    const {user, authTokens} = useContext(AuthContext)
     const navigateTo = useNavigate()
-    const { logoutUser } = useContext(AuthContext)
+    const {logoutUser} = useContext(AuthContext)
+    const password = 1
+
     const enterRoom = (e) => {
         e.preventDefault()
-        navigateTo(`/${e.target.room.value}/${'1'}`)
+        navigateTo(`/${e.target.room.value}/1`)
     }
+
     const CreateRoom = async (e) => {
         e.preventDefault()
+
         await fetch(`http://localhost:8000/room/`, {
             method: 'POST',
             headers: {
                 "Authorization": `Bearer ${authTokens.access}`
-            },
-            body: JSON.stringify({'name': e.target.name.value, 'password': '1'})
+            }, body: JSON.stringify({'name': e.target.name.value, 'password': e.target.password.value || password})
         })
         .then(response => response.json())
         .then(data => {
-            data.status === 200 ? navigateTo(`/${e.target.name.value}/${'1'}`)  : alert("Error Creating room")
+            data.status === 200 ? navigateTo(`/${e.target.name.value}/1`) : alert("Error Creating room")
         })
     }
 
@@ -34,8 +37,7 @@ const HomePage = () => {
             method: 'POST',
             headers: {
                 "Authorization": `Bearer ${authTokens.access}`
-            },
-            body: JSON.stringify({'username': user.username, 'password': '1'})
+            }, body: JSON.stringify({'username': user.username, 'password': e.target.password.value || password})
         })
     }
 
